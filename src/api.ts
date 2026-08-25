@@ -1,3 +1,4 @@
+import{canonicalProvider}from'./lib/model-route.mjs';
 export type Session={id:string;title?:string;source?:string;model?:string;started_at?:number;last_active?:number};
 export type Message={id?:string;role:string;content:unknown;created_at?:number};
 const csrf=()=>document.cookie.split('; ').find(v=>v.startsWith('hp_csrf='))?.split('=')[1]||'';
@@ -5,7 +6,7 @@ async function request(path:string,init:RequestInit={}){const mutation=!['GET','
 export const api={
  auth:()=>fetch('/pocket/auth/session').then(r=>r.ok),login:(password:string)=>fetch('/pocket/auth/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({password})}),
  sessions:async()=>((await (await request('/api/sessions?limit=60')).json()).data as Session[]),
- create:async(title:string)=>((await (await request('/api/sessions',{method:'POST',body:JSON.stringify({title})})).json()).session as Session),
+ create:async(title:string)=>{const options=await (await request('/api/model/options')).json();return (await (await request('/api/sessions',{method:'POST',body:JSON.stringify({title,model:options.model,provider:canonicalProvider(options.provider),require_model_lock:true})})).json()).session as Session},
  messages:async(id:string)=>((await (await request(`/api/sessions/${encodeURIComponent(id)}/messages`)).json()).data as Message[]),
  stream:(id:string,body:unknown,signal:AbortSignal)=>request(`/api/sessions/${encodeURIComponent(id)}/chat/stream`,{method:'POST',body:JSON.stringify(body),signal}),
 };

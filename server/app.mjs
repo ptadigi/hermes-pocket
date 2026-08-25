@@ -21,6 +21,7 @@ function session(req, authSecret) { return verifySession(parseCookies(req.header
 
 export function createPocketServer({ authSecret, password, hermesKey, hermesBase = 'http://127.0.0.1:8642', staticDir }) {
   if (!authSecret || authSecret.length < 16 || !password || !hermesKey) throw new Error('Missing secure server configuration');
+  const loginAttempts = new Map();
   return http.createServer(async (req, res) => {
     try {
       const url = new URL(req.url, 'http://localhost');
@@ -31,8 +32,15 @@ export function createPocketServer({ authSecret, password, hermesKey, hermesBase
       res.setHeader('content-security-policy', "default-src 'self'; img-src 'self' data: https:; media-src 'self' data: blob: https:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; worker-src 'self'; manifest-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'");
 
       if (url.pathname === '/pocket/auth/login' && req.method === 'POST') {
+        const ip = req.socket.remoteAddress || 'unknown', now = Date.now(), current = loginAttempts.get(ip);
+        if (current?.count >= 5 && current.until > now) return json(res, 429, { error: 'rate_limited' }, { 'retry-after': String(Math.ceil((current.until - now) / 1000)) });
         let payload; try { payload = JSON.parse((await readBody(req, 16_384)).toString() || '{}'); } catch { return json(res, 400, { error: 'invalid_json' }); }
-        if (!equalText(payload.password || '', password)) return json(res, 401, { error: 'invalid_credentials' });
+        if (!equalText(payload.password || '', password)) {
+          const fresh = !current || current.until <= now;
+          loginAttempts.set(ip, { count: fresh ? 1 : current.count + 1, until: fresh ? now + 300_000 : current.until });
+          return json(res, 401, { error: 'invalid_credentials' });
+        }
+        loginAttempts.delete(ip);
         const csrf = randomBytes(24).toString('base64url');
         res.setHeader('set-cookie', [secureCookie('hp_session', issueSession(authSecret, Date.now(), csrf)), csrfCookie(csrf)]);
         return json(res, 200, { ok: true });
