@@ -7,7 +7,7 @@ const ROUTES = [
   ['GET', /^\/api\/sessions\/[^/?#]+$/],
   ['PATCH', /^\/api\/sessions\/[^/?#]+$/],
   ['GET', /^\/api\/sessions\/[^/?#]+\/messages(?:\?.*)?$/],
-  ['POST', /^\/api\/sessions\/[^/?#]+\/(?:fork|chat|chat\/stream)$/],
+  ['POST', /^\/api\/sessions\/[^/?#]+\/(?:fork|chat|chat\/stream|model)$/],
   ['POST', /^\/v1\/runs$/],
   ['GET', /^\/v1\/runs\/[^/?#]+(?:\/events)?$/],
   ['POST', /^\/v1\/runs\/[^/?#]+\/(?:stop|approval)$/],
