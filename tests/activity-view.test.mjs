@@ -1,0 +1,5 @@
+import test from'node:test';import assert from'node:assert/strict';import{activityFamily,activityLabel,activityView,reasoningView}from'../src/lib/activity-view.mjs';
+test('tools map to six compact UI families',()=>{assert.equal(activityFamily('patch'),'diff');assert.equal(activityFamily('terminal'),'terminal');assert.equal(activityFamily('read_file'),'file');assert.equal(activityFamily('browser_console'),'browser');assert.equal(activityFamily('delegate_task'),'status')});
+test('diff view counts rows and strips user path',()=>{const v=activityView({tool_name:'patch',content:'*** Update File: C:\\Users\\Admin\\x\\main.tsx\n-old\n+new'});assert.equal(v.title,'main.tsx');assert.equal(v.adds,1);assert.equal(v.dels,1);assert.equal(v.body.includes('C:\\Users'),false)});
+test('reasoning text is bounded and sanitized',()=>{assert.equal(reasoningView({reasoning_content:'C:\\Users\\Admin\\x\\a.ts'}).includes('Admin'),false)});
+test('tool labels are user-facing Vietnamese',()=>{assert.equal(activityLabel('patch'),'Đã sửa file');assert.equal(activityLabel('delegate_task'),'Agent phụ')});

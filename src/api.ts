@@ -1,6 +1,6 @@
 import{canonicalProvider}from'./lib/model-route.mjs';
 export type Session={id:string;title?:string;source?:string;model?:string;provider?:string;started_at?:number;last_active?:number};
-export type Message={id?:string;role:string;content:unknown;created_at?:number;tool_name?:string;finish_reason?:string};
+export type Message={id?:string;role:string;content:unknown;created_at?:number;tool_name?:string;finish_reason?:string;reasoning?:string;reasoning_content?:string;display_kind?:string;display_metadata?:Record<string,unknown>};
 export type ModelOptions={model:string;provider:string;providers?:Array<{slug:string;name:string;is_current?:boolean;authenticated?:boolean;models?:string[]}>};
 const csrf=()=>document.cookie.split('; ').find(v=>v.startsWith('hp_csrf='))?.split('=')[1]||'';
 async function request(path:string,init:RequestInit={}){const mutation=!['GET','HEAD'].includes((init.method||'GET').toUpperCase());const response=await fetch('/pocket/api'+path,{...init,headers:{...(mutation?{'x-csrf-token':decodeURIComponent(csrf())}:{}),...(init.body?{'content-type':'application/json'}:{}),...init.headers}});if(!response.ok)throw new Error(`HTTP ${response.status}`);return response}
