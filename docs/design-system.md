@@ -22,6 +22,6 @@ Touch target minimum 44px. Safe-area padding mandatory. Content text remains DOM
 
 ## Motion
 
-ThreeUI Community `EnergyOrb` only on launch/connection surface. Lazy-loaded. DPR capped by component. Existing component pauses offscreen/hidden and handles reduced motion. CSS static radial fallback remains visible when WebGL unavailable.
+ThreeUI Community `GlobeCollection`, variant `energy-orb`, only on launch/connection surface. Lazy-loaded from `@designcodeio/threeui/components/GlobeCollection`. DPR capped; component pauses offscreen/hidden. Reduced-motion wrapper must replace the still-running orb shader with a CSS static radial fallback.
 
 No scroll hijack, dense particles, cursor replacement or continuous 3D in chat workspace.

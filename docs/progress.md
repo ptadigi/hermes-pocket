@@ -12,7 +12,7 @@
 - Active model: `cx/gpt-5.6-sol`; provider `custom:local-(127.0.0.1:20128)`.
 - API Server source supports Sessions REST, Runs, SSE tool lifecycle, approval, stop, inline images.
 - API Server was disabled and `127.0.0.1:8642` closed.
-- Tailscale online at `phamthanh.taile9535c.ts.net`; existing Funnel points to inactive `127.0.0.1:9999`.
+- Tailscale online at `phamthanh.taile9535c.ts.net`; existing **public Funnel** points to inactive `127.0.0.1:9999`. Delivery gate must replace Funnel with private Tailscale Serve.
 - API settings written with loopback host and random key; `.env` backup created.
 - Gateway self-restart blocked by runtime safety; no process stopped.
 - BFF security/proxy RED→GREEN: 7 tests pass.

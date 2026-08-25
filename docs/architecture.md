@@ -8,7 +8,7 @@
 
 - Hermes API Server: official `gateway/platforms/api_server.py`, loopback `127.0.0.1:8642`.
 - Pocket BFF: Node stdlib, loopback `127.0.0.1:9999`.
-- HTTPS: Tailscale edge proxies to Pocket BFF. No new public listening port.
+- HTTPS: Tailscale Serve proxies privately within the tailnet to Pocket BFF. No new public listening port. Existing Funnel is public and must be replaced at the delivery gate.
 - State: canonical Hermes `state.db`; Pocket stores no transcript or memory.
 
 ## Authentication
