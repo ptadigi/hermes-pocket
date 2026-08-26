@@ -1,0 +1,3 @@
+import test from'node:test';import assert from'node:assert/strict';import{canonicalRunComplete,latestMessageId}from'../src/lib/run-reconcile.mjs';
+test('busy run reconciles only from a newer terminal assistant message',()=>{const rows=[{id:10,role:'assistant',finish_reason:'stop'},{id:11,role:'user'},{id:12,role:'tool'},{id:13,role:'assistant',finish_reason:'tool_calls'}];assert.equal(canonicalRunComplete(rows,10),false);assert.equal(canonicalRunComplete([...rows,{id:14,role:'assistant',finish_reason:'stop'}],10),true)});
+test('latest message id is safe for empty and mixed rows',()=>{assert.equal(latestMessageId([]),0);assert.equal(latestMessageId([{id:'7'},{id:9}]),9)});
