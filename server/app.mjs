@@ -3,6 +3,7 @@ import { createReadStream, existsSync, statSync } from 'node:fs';
 import { extname, join, normalize } from 'node:path';
 import { randomBytes, timingSafeEqual } from 'node:crypto';
 import { allowedHermesRoute, isMutation } from './proxy-policy.mjs';
+import { settingsRoute, validEnvKey } from './settings-policy.mjs';
 import { csrfCookie, csrfMatches, issueSession, parseCookies, secureCookie, verifySession } from './security.mjs';
 
 const json = (res, status, body, headers = {}) => {
@@ -19,7 +20,7 @@ const mime = path => ({ '.html':'text/html; charset=utf-8','.js':'text/javascrip
 
 function session(req, authSecret) { return verifySession(parseCookies(req.headers.cookie).hp_session, authSecret); }
 
-export function createPocketServer({ authSecret, password, hermesKey, hermesBase = 'http://127.0.0.1:8642', staticDir }) {
+export function createPocketServer({ authSecret, password, hermesKey, hermesBase = 'http://127.0.0.1:8642', staticDir, settingsRunner = null }) {
   if (!authSecret || authSecret.length < 16 || !password || !hermesKey) throw new Error('Missing secure server configuration');
   const loginAttempts = new Map();
   return http.createServer(async (req, res) => {
@@ -48,6 +49,28 @@ export function createPocketServer({ authSecret, password, hermesKey, hermesBase
       if (url.pathname === '/pocket/auth/session' && req.method === 'GET') return json(res, session(req, authSecret) ? 200 : 401, { authenticated: Boolean(session(req, authSecret)) });
       if (url.pathname === '/pocket/auth/logout' && req.method === 'POST') {
         res.setHeader('set-cookie', [secureCookie('hp_session','',0), csrfCookie('',0)]); return json(res, 200, { ok: true });
+      }
+
+      if (url.pathname.startsWith('/pocket/settings/')) {
+        const auth = session(req, authSecret);
+        if (!auth) return json(res, 401, { error: 'unauthorized' });
+        if (!settingsRunner) return json(res, 503, { error: 'settings_unavailable' });
+        const cookies = parseCookies(req.headers.cookie);
+        if (isMutation(req.method) && !csrfMatches(cookies.hp_csrf, req.headers['x-csrf-token'])) return json(res, 403, { error: 'csrf' });
+        const request = settingsRoute(req.method, url.pathname);
+        if (!request) return json(res, 404, { error: 'route_not_allowed' });
+        if (isMutation(req.method)) {
+          let payload;
+          try { payload = JSON.parse((await readBody(req, 1_000_000)).toString() || '{}'); }
+          catch { return json(res, 400, { error: 'invalid_json' }); }
+          if (request.action === 'config.save') request.config = payload.config;
+          else if (request.action === 'env.set') { request.key = payload.key; request.value = payload.value; }
+          else if (request.action === 'env.delete') request.key = payload.key;
+          else if (request.action === 'providers.custom.save') request.endpoint = payload.endpoint;
+          if (request.action.startsWith('env.') && !validEnvKey(request.key)) return json(res, 400, { error: 'invalid_env_key' });
+        }
+        const result = await settingsRunner(request);
+        return json(res, 200, result);
       }
 
       if (url.pathname.startsWith('/pocket/api/')) {
