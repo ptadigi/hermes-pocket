@@ -19,6 +19,7 @@ export const api={
  stream:(id:string,body:unknown,signal:AbortSignal)=>request(`/api/sessions/${encodeURIComponent(id)}/chat/stream`,{method:'POST',body:JSON.stringify(body),signal}),
 };
 export const settingsApi={
+ snapshot:async()=>(await (await settingsRequest('/snapshot')).json()) as{config:Record<string,unknown>;schema:ConfigSchema;env:EnvMap},
  config:async()=>(await (await settingsRequest('/config')).json()) as{config:Record<string,unknown>},
  defaults:async()=>(await (await settingsRequest('/defaults')).json()) as{config:Record<string,unknown>},
  schema:async()=>(await (await settingsRequest('/schema')).json()) as ConfigSchema,

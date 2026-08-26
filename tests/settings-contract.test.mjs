@@ -10,6 +10,7 @@ test('Pocket exposes the complete Desktop settings navigation', () => {
 });
 
 test('settings policy permits authority-backed operations only', () => {
+  assert.deepEqual(settingsRoute('GET', '/pocket/settings/snapshot'), { action: 'snapshot' });
   assert.deepEqual(settingsRoute('GET', '/pocket/settings/config'), { action: 'config.get' });
   assert.deepEqual(settingsRoute('PUT', '/pocket/settings/config'), { action: 'config.save' });
   assert.deepEqual(settingsRoute('PUT', '/pocket/settings/env'), { action: 'env.set' });

@@ -8,6 +8,7 @@ export const SETTINGS_VIEWS = [
 ].map(([id,label,mode])=>({id,label,mode,note:mode==='limited'?'Tính năng này phụ thuộc Hermes Desktop/Electron; Pocket chỉ hiển thị trạng thái an toàn.':''}));
 
 const ROUTES = new Map([
+  ['GET /pocket/settings/snapshot','snapshot'],
   ['GET /pocket/settings/config','config.get'],['GET /pocket/settings/defaults','config.defaults'],
   ['GET /pocket/settings/schema','config.schema'],['PUT /pocket/settings/config','config.save'],
   ['GET /pocket/settings/env','env.list'],['PUT /pocket/settings/env','env.set'],['DELETE /pocket/settings/env','env.delete'],

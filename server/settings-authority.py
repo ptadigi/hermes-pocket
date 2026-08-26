@@ -37,6 +37,8 @@ def emit(value: Any) -> None:
 
 async def dispatch(req: dict[str, Any]) -> Any:
     action = req.get("action")
+    if action == "snapshot":
+        return {"config": scrub(await web.get_config()), "schema": await web.get_schema(), "env": await web.get_env_vars()}
     if action == "config.get":
         return {"config": scrub(await web.get_config())}
     if action == "config.defaults":
