@@ -10,10 +10,11 @@ test('signed session round-trips and expires', () => {
   assert.equal(verifySession(token, 'secret-that-is-long-enough', now + 86_400_001), null);
 });
 
-test('csrf requires exact cookie/header match', () => {
-  assert.equal(csrfMatches('abc', 'abc'), true);
-  assert.equal(csrfMatches('abc', 'ABC'), false);
-  assert.equal(csrfMatches('', ''), false);
+test('csrf requires exact signed-session/cookie/header match', () => {
+  assert.equal(csrfMatches('abc', 'abc', 'abc'), true);
+  assert.equal(csrfMatches('abc', 'ABC', 'ABC'), false);
+  assert.equal(csrfMatches('abc', 'abc', 'ABC'), false);
+  assert.equal(csrfMatches('', '', ''), false);
 });
 
 test('return path stays same-origin', () => {

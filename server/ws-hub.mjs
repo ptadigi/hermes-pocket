@@ -1,6 +1,24 @@
 // Pure, network-free WebSocket fan-out logic for canonical session bridging.
 // One connection subscribes to exactly one session at a time (the client's active session).
 
+// Channel identity = owning profile + canonical session id. Two profiles can
+// hold the same session id, so the profile must be part of the subscription key
+// or their polls/frames would cross runtimes.
+const SEPARATOR = '::';
+
+export const channelKey = (profile, sessionId) => `${profile}${SEPARATOR}${sessionId}`;
+
+// Split on the FIRST separator only: session ids may themselves contain it.
+export function parseChannel(key) {
+  if (typeof key !== 'string') return null;
+  const idx = key.indexOf(SEPARATOR);
+  if (idx <= 0) return null;
+  const profile = key.slice(0, idx);
+  const sessionId = key.slice(idx + SEPARATOR.length);
+  if (!profile || !sessionId) return null;
+  return { profile, sessionId };
+}
+
 export function createHub() {
   return { bySession: new Map(), byConn: new Map(), state: new Map() };
 }

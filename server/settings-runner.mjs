@@ -2,10 +2,11 @@ import { spawn } from 'node:child_process';
 import { dirname, resolve } from 'node:path';
 import { homedir } from 'node:os';
 import { fileURLToPath } from 'node:url';
+import { resolveHermesHome } from './profile-registry.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const script = resolve(here, 'settings-authority.py');
-const hermesHome = process.env.HERMES_HOME || resolve(homedir(), 'AppData/Local/hermes');
+const hermesHome = resolveHermesHome(process.env.HERMES_HOME || resolve(homedir(), 'AppData/Local/hermes'));
 const defaultPython = resolve(hermesHome, 'hermes-agent/venv/Scripts/python.exe');
 
 export function createSettingsRunner({ python = process.env.HERMES_PYTHON || defaultPython, timeoutMs = 20_000 } = {}) {

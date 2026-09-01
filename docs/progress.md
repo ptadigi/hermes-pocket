@@ -1,27 +1,42 @@
-# Progress
+# Trạng thái dự án
 
-## Current
+Tài liệu này chỉ ghi trạng thái hiện tại; không dùng PID, hostname hoặc credential môi trường phát triển làm bằng chứng phát hành.
 
-- Goal tasks: 0/8 accepted.
-- Wave gates: 0/8 accepted.
-- Active wave W1: source/runtime discovery.
+## Đã triển khai
 
-## Evidence
+- PWA mobile-first + same-origin BFF.
+- Canonical Hermes sessions và transcript.
+- Streaming assistant/tool lifecycle.
+- Settings authority với secret redaction.
+- Multi-profile discovery/routing qua shared gateway listener.
+- Runtime status fail-closed.
+- Shared pending text queue với CAS/lease.
+- Inline image inbound và image rendering outbound.
+- Authenticated local `MEDIA:` route với root allowlist.
+- PWA icons/manifest/service worker.
+- Windows startup launcher.
+- Tailscale Funnel opt-in với cổng cấu hình riêng.
+- Community README, security policy, contributing guide, MIT license và CI.
 
-- Hermes gateway default running before change: PID 37444.
-- Active model: `cx/gpt-5.6-sol`; provider `custom:local-(127.0.0.1:20128)`.
-- API Server source supports Sessions REST, Runs, SSE tool lifecycle, approval, stop, inline images.
-- API Server was disabled and `127.0.0.1:8642` closed.
-- Tailscale online at `phamthanh.taile9535c.ts.net`; existing **public Funnel** points to inactive `127.0.0.1:9999`. Delivery gate must replace Funnel with private Tailscale Serve.
-- API settings written with loopback host and random key; `.env` backup created.
-- Gateway self-restart blocked by runtime safety; no process stopped.
-- BFF security/proxy RED→GREEN: 7 tests pass.
+## Gate phát hành
 
-## Open gates
+- `npm ci` trên cây sạch.
+- `npm run check` trên bytes cuối.
+- `npm audit` không có high/critical runtime vulnerability.
+- Secret/path scan không có credential hoặc đường dẫn user-specific.
+- Runtime health local và HTTPS route (nếu bật Funnel).
+- Ảnh hai chiều hiển thị thật trên mobile bundle cuối.
 
-- External-shell gateway restart.
-- Live API probe.
-- Frontend implementation/build/browser QA.
-- Durable Pocket startup.
-- Tailscale HTTPS live.
-- iPhone Add to Home Screen acceptance.
+## Bằng chứng ảnh hai chiều — 2026-08-31
+
+- Inbound: Pocket/BFF gửi content multimodal; Hermes log ghi `[1 image]`, tạo PNG tạm 42,1 KB và bắt đầu vision processing.
+- Provider: vision không hoàn tất vì model được cấu hình trả 429 quota và Hermes chờ retry; đây không phải mất ảnh ở Pocket.
+- Outbound: authenticated `GET /pocket/media` qua HTTPS 8443 trả `image/png`, 283.701 byte, signature PNG hợp lệ.
+- Parser/render: test bao phủ `image_url`, Markdown image và `MEDIA:` kể cả Windows path có khoảng trắng.
+- Mobile pixel acceptance: chưa chạy vì Chrome người dùng đang mở; tránh khởi chạy/kill CDP trái quy tắc an toàn.
+
+## Human gates
+
+- Safari Add to Home Screen.
+- Xác nhận icon PWA sau khi xóa/cài lại nếu iOS giữ cache.
+- Xác nhận ảnh inbound/outbound trên thiết bị thật.

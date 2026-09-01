@@ -1,6 +1,6 @@
 # Hermes Pocket agent rules
 
-- Source authority: live Hermes API Server contract in `C:/Users/Admin/AppData/Local/hermes/hermes-agent`.
+- Source authority: the installed Hermes Agent API Server contract and the official API Server documentation.
 - Never expose `API_SERVER_KEY` or `POCKET_AUTH_SECRET` to browser code, logs, docs, or tests.
 - BFF is same-origin, minimal Node stdlib. No parallel agent loop or copied Hermes session store.
 - TDD: failing behavior test before production code.

@@ -4,3 +4,10 @@ dist/
 *.log
 *.tsbuildinfo
 model-options.json
+coverage/
+evidence/
+*.bak
+*.tmp
+__pycache__/
+*.py[cod]
+openapi-live.json

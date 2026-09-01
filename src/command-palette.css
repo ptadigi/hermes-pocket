@@ -1,0 +1,18 @@
+.command-palette{border:1px solid #2a2f3a;border-radius:14px;background:#0d1016;box-shadow:0 -8px 30px #0009;margin:0 0 10px;overflow:hidden}
+.command-palette-head{display:flex;justify-content:space-between;align-items:center;padding:9px 14px;border-bottom:1px solid #1f242e}
+.command-palette-head b{font-size:12px;color:#c9ced7;letter-spacing:.02em}
+.command-palette-head small{font-size:10px;color:#7c8492}
+.command-palette ul{list-style:none;margin:0;padding:6px;max-height:min(46vh,320px);overflow-y:auto;-webkit-overflow-scrolling:touch}
+.command-palette li{margin:0}
+.command-palette li button{width:100%;min-height:48px;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;background:transparent;border:0;border-radius:10px;color:#e6e9ef;text-align:left;padding:8px 12px;cursor:pointer}
+.command-palette li button b{font:600 13px 'Space Mono',ui-monospace,monospace;color:#ff6b89}
+.command-palette li button span{color:#aab1bd;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.command-palette li button em{font-style:normal;font-size:10px;color:#72dc9b;border:1px solid #234a35;border-radius:6px;padding:2px 7px;white-space:nowrap}
+.command-palette li button.active,.command-palette li button:active{background:#1a1f28}
+.command-palette li.palette-group{padding:8px 14px 4px;font:600 10px 'Space Mono',ui-monospace,monospace;letter-spacing:.06em;text-transform:uppercase;color:#6c7482;border-top:1px solid #1b2028;margin-top:4px}
+.command-palette li button.skill-row b{color:#7fd1ff}
+.command-palette li button.skill-row em{color:#8fb0d6;border-color:#25405a}
+.composer-notice{margin:0 0 10px;padding:9px 13px;border:1px solid #2b3a2f;border-radius:11px;background:#111c15;color:#8fe6b0;font-size:12.5px;line-height:1.45}
+.composer .cmd-open{min-height:36px;padding:0 12px;border:1px solid #2b303a;border-radius:9px;background:#151922;color:#ff6b89;font:600 12px 'Space Mono',ui-monospace,monospace;cursor:pointer}
+.composer .cmd-open:active{background:#1d222c}
+@media(max-width:760px){.command-palette li button{min-height:52px}.command-palette li button span{font-size:12.5px}.composer .cmd-open{min-height:44px}}

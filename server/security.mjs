@@ -23,10 +23,15 @@ export function verifySession(token, secret, now = Date.now()) {
   } catch { return null; }
 }
 
-export function csrfMatches(cookieValue, headerValue) {
-  if (!cookieValue || !headerValue) return false;
-  const a = Buffer.from(cookieValue); const b = Buffer.from(headerValue);
-  return a.length === b.length && timingSafeEqual(a, b);
+export function csrfMatches(sessionValue, cookieValue, headerValue) {
+  if (!sessionValue || !cookieValue || !headerValue) return false;
+  const session = Buffer.from(sessionValue);
+  const cookie = Buffer.from(cookieValue);
+  const header = Buffer.from(headerValue);
+  return session.length === cookie.length
+    && cookie.length === header.length
+    && timingSafeEqual(session, cookie)
+    && timingSafeEqual(cookie, header);
 }
 
 export function validReturnPath(value) {

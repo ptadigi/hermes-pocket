@@ -1,37 +1,88 @@
-# Architecture
+# Kiến trúc Hermes Pocket
 
-## Decision
+## Quyết định chính
 
-**PWA + same-origin BFF.** Direct browser-to-Hermes rejected because it requires a reusable bearer token in JavaScript-accessible storage or memory. Capacitor deferred until PWA live acceptance.
+Hermes Pocket dùng **PWA + same-origin BFF**. Trình duyệt không gọi trực tiếp Hermes API Server vì cách đó buộc bearer key tồn tại trong JavaScript-accessible memory/storage. BFF giữ key server-side, phát cookie đăng nhập HttpOnly và kiểm CSRF cho mutation.
 
-## Runtime
+## Sơ đồ runtime
 
-- Hermes API Server: official `gateway/platforms/api_server.py`, loopback `127.0.0.1:8642`.
-- Pocket BFF: Node stdlib, loopback `127.0.0.1:9999`.
-- HTTPS: Tailscale Serve proxies privately within the tailnet to Pocket BFF. No new public listening port. Existing Funnel is public and must be replaced at the delivery gate.
-- State: canonical Hermes `state.db`; Pocket stores no transcript or memory.
+```text
+Mobile Safari / PWA
+        │ HTTPS tùy chọn (Tailscale)
+        ▼
+Pocket BFF 127.0.0.1:9999
+        │ Authorization: Bearer <server-side key>
+        ▼
+Hermes API Server 127.0.0.1:8642
+        ▼
+Hermes Agent + canonical state.db
+```
 
-## Authentication
+- Hermes API Server là authority cho session, message, model, runs và SSE.
+- Pocket không chạy agent loop, không sao chép transcript và không tạo memory store riêng.
+- Service worker chỉ cache app shell; API, private transcript và media route không được cache công khai.
 
-- Owner enters Pocket password.
-- BFF issues signed HttpOnly Secure SameSite=Strict session cookie.
-- Separate CSRF cookie echoed in `X-CSRF-Token` for mutations.
-- BFF injects Hermes bearer key server-side.
-- Proxy route allowlist blocks jobs, raw files, arbitrary paths and provider endpoints not needed by UI.
+## Trust boundaries
 
-## Session path
+### Browser
 
-`GET/POST /api/sessions` → list/create canonical session.
+Browser chỉ giữ session cookie HttpOnly và CSRF cookie. Nó không biết `API_SERVER_KEY`, provider key hoặc credential Hermes.
 
-`GET /api/sessions/{id}/messages` → resume canonical messages.
+### Pocket BFF
 
-`POST /api/sessions/{id}/chat/stream` → SSE assistant/tool lifecycle.
+BFF:
 
-`POST /v1/runs` + events/status/approval/stop → detachable long-run control when UI needs it.
+- bind loopback mặc định;
+- inject bearer key khi proxy;
+- chỉ proxy các route nằm trong allowlist;
+- bắt buộc CSRF cho mutation;
+- trả settings đã redact;
+- phục vụ local image từ allowlisted roots sau realpath validation.
 
-## Deliberate limits
+### Tailscale
 
-- No duplicate agent loop.
-- No copied session DB.
-- No arbitrary file upload: current Hermes API explicitly supports inline images only.
-- No service worker caching API or private transcript payloads.
+Public/private HTTPS là lớp ngoài BFF và phải opt-in. `POCKET_ENABLE_FUNNEL=false` là mặc định. Khi bật Funnel, nên dùng cổng riêng để không ghi đè dịch vụ khác trên cùng hostname.
+
+## Profile multiplex
+
+Một gateway `default` sở hữu listener API Server. Profile phụ dùng cùng listener qua `/p/<profile>/` với key riêng. Pocket khám phá profile từ `HERMES_HOME` và gửi `X-Pocket-Profile`; BFF resolve prefix/key tương ứng.
+
+Không chạy nhiều gateway profile cùng bind một cổng API.
+
+## Luồng session
+
+- `GET/POST /api/sessions` — list/create canonical session.
+- `GET /api/sessions/{id}/messages` — đọc transcript canonical.
+- `POST /api/sessions/{id}/chat/stream` — streaming assistant/tool lifecycle.
+- `/v1/runs/*` — status, events, approval và stop.
+- `GET /pocket/runtime/sessions` — snapshot status đã giảm còn `id`, `session_key`, `status`.
+
+Runtime snapshot fail-closed: thiếu hoặc quá hạn thì UI không được tự suy trạng thái xanh.
+
+## Ảnh hai chiều
+
+### Inbound
+
+Pocket gửi text + `image_url` dạng data URL theo contract multimodal chính thức của Hermes API Server.
+
+### Outbound
+
+UI tách content thành text/image parts và hỗ trợ:
+
+- multimodal `image_url`;
+- Markdown image;
+- `MEDIA:<local-path>` chuyển qua `/pocket/media?path=...`.
+
+Media route yêu cầu đăng nhập, chỉ nhận extension ảnh và chỉ đọc file nằm dưới `POCKET_MEDIA_ROOTS` sau khi resolve real path.
+
+## Shared queue
+
+Pending text queue dùng file authority chung, có atomic replacement, inter-process lock, revision/CAS và owner lease. Attachment không được đưa vào queue chung vì path/data URL không portable giữa client.
+
+## Giới hạn có chủ ý
+
+- Không upload file tùy ý; Hermes API Server chỉ hỗ trợ inline image ở luồng này.
+- Không expose raw filesystem hoặc arbitrary upstream route.
+- Không bind BFF ra LAN/Internet trực tiếp.
+- Không mặc định bật Funnel.
+- Windows là môi trường được kiểm thử chính; startup packaging cho Linux/macOS chưa có.

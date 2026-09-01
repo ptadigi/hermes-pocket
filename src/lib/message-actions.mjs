@@ -1,0 +1,2 @@
+export function regenerateTarget(messages,targetId){const at=messages.findIndex(row=>String(row.id)===String(targetId));if(at<0)return null;for(let i=at-1;i>=0;i--){const row=messages[i];if(row.role==='user'&&row.id!=null&&typeof row.content==='string'&&row.content.trim())return{index:i,id:String(row.id),text:row.content,confirmEmpty:i===0}}return null}
+export const actionLabels={branch:'Nhánh sang cuộc trò chuyện mới',copy:'Sao chép tin nhắn',speak:'Đọc thành tiếng',regenerate:'Tạo lại câu trả lời'};

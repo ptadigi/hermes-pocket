@@ -4,7 +4,7 @@ import{randomUUID}from'node:crypto';
 
 const chrome='C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 const port=20000+Math.floor(Math.random()*20000);
-const profile=`C:\\Users\\Admin\\AppData\\Local\\Temp\\hp-cdp-${randomUUID()}`;
+const profile=`${process.env.TEMP||process.env.TMP||'.'}\\hp-cdp-${randomUUID()}`;
 const target='http://127.0.0.1:9999/?cdp-mobile=1';
 const child=spawn(chrome,[`--remote-debugging-port=${port}`,'--remote-debugging-address=127.0.0.1','--headless=new','--disable-gpu','--disable-background-networking','--no-first-run',`--user-data-dir=${profile}`,'about:blank'],{stdio:'ignore'});
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
@@ -27,4 +27,4 @@ try{
   const metrics=await call('Runtime.evaluate',{expression,returnByValue:true}),value=JSON.parse(metrics.result.value);console.log(JSON.stringify(value));
   if(!value.url?.startsWith(target)||value.inner?.[0]!==430||value.inner?.[1]!==932||value.scroll?.[0]!==430||value.card?.left<0||value.card?.right>430||value.input?.height<44||value.button?.height<44||!value.sw)throw Error('mobile acceptance failed');
   const shot=await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});await writeFile(new URL('../evidence/iphone-cdp.png',import.meta.url),Buffer.from(shot.data,'base64'));
-}finally{try{ws?.close()}catch{}if(child.pid)spawnSync('taskkill',['/PID',String(child.pid),'/T','/F'],{stdio:'ignore'})}
+}finally{try{ws?.close()}catch{}if(child.pid)spawnSync('taskkill',['/PID',String(child.pid),'/F'],{stdio:'ignore'})}

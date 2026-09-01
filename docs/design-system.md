@@ -22,6 +22,6 @@ Touch target minimum 44px. Safe-area padding mandatory. Content text remains DOM
 
 ## Motion
 
-ThreeUI Community `GlobeCollection`, variant `energy-orb`, only on launch/connection surface. Lazy-loaded from `@designcodeio/threeui/components/GlobeCollection`. DPR capped; component pauses offscreen/hidden. Reduced-motion wrapper must replace the still-running orb shader with a CSS static radial fallback.
+Motion stays CSS-native and optional. Respect `prefers-reduced-motion`; no continuous 3D, scroll hijack, dense particles or cursor replacement in the chat workspace.
 
-No scroll hijack, dense particles, cursor replacement or continuous 3D in chat workspace.
+The app icon is generated from `public/icons/icon-source.png`; run `python scripts/generate-icons.py` to regenerate the 180/192/512px variants.

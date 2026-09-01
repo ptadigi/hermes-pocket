@@ -7,7 +7,7 @@ import { randomUUID } from 'node:crypto';
 const root=resolve(import.meta.dirname,'..'),env={};
 for(const line of readFileSync(resolve(root,'.env.local'),'utf8').split(/\r?\n/)){if(!line||line.startsWith('#')||!line.includes('='))continue;const i=line.indexOf('=');env[line.slice(0,i)]=line.slice(i+1)}
 const api=env.HERMES_API_BASE,apiHeaders={authorization:`Bearer ${env.API_SERVER_KEY}`,'content-type':'application/json'};
-const sid=`pocket_browser_ws_${Date.now()}`,chrome='C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',port=21000+Math.floor(Math.random()*15000),profile=`C:\\Users\\Admin\\AppData\\Local\\Temp\\hp-ws-${randomUUID()}`;
+const sid=`pocket_browser_ws_${Date.now()}`,chrome='C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',port=21000+Math.floor(Math.random()*15000),profile=`${process.env.TEMP||process.env.TMP||'.'}\\hp-ws-${randomUUID()}`;
 const target=`http://127.0.0.1:${env.POCKET_PORT||9999}/?session=${sid}`;
 const child=spawn(chrome,[`--remote-debugging-port=${port}`,'--remote-debugging-address=127.0.0.1','--headless=new','--disable-gpu','--disable-background-networking','--no-first-run',`--user-data-dir=${profile}`,'about:blank'],{stdio:'ignore'});
 const wait=ms=>new Promise(r=>setTimeout(r,ms));let ws,seq=0;const pending=new Map(),wsCreated=[],wsFrames=[],consoleErrors=[],exceptions=[];
@@ -39,4 +39,4 @@ try{
  const out={session:sid,pinned,thinkingBefore,thinkingSeen,wsCreated:wsCreated.some(x=>x.includes(`/pocket/ws?session=${sid}`)),wsChanged:changed,consoleErrors,exceptions,canonical,ui:JSON.parse(result)};
  console.log(JSON.stringify(out,null,2));
  if(pinned!==sid||!thinkingSeen||!changed||out.ui.thinking||!out.ui.assistantTexts.some(x=>x.includes('BROWSER_WS_OK'))||out.ui.inner[0]!==430||out.ui.scrollWidth!==430||consoleErrors.length||exceptions.length)process.exitCode=1;
-}finally{try{ws?.close()}catch{}if(child.pid)spawnSync('taskkill',['/PID',String(child.pid),'/T','/F'],{stdio:'ignore'});await fetch(`${api}/api/sessions/${sid}`,{method:'DELETE',headers:apiHeaders}).catch(()=>{})}
+}finally{try{ws?.close()}catch{}if(child.pid)spawnSync('taskkill',['/PID',String(child.pid),'/F'],{stdio:'ignore'});await fetch(`${api}/api/sessions/${sid}`,{method:'DELETE',headers:apiHeaders}).catch(()=>{})}
